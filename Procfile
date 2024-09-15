@@ -1,0 +1,1 @@
+worker: python currency_converter_bot.py

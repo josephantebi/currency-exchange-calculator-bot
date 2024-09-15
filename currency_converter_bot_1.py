@@ -54,7 +54,7 @@ sorted_currencies = ['ILS', 'EUR', 'USD', 'HUF', 'RON', 'GBP'] + sorted(
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
-    delete_invalid_and_user_messages(message)  # Delete invalid messages when starting new session
+    delete_invalid_and_user_messages(message)
     if 'start_triggered' in user_data and user_data['start_triggered']:
         return
     user_data['start_triggered'] = True
@@ -89,7 +89,8 @@ def process_from_currency(message):
     for currency in sorted_currencies:
         markup.add(types.KeyboardButton(f"{currency_names_flags[currency]}"))
     msg = bot.send_message(message.chat.id,
-                           f"Select the currency you want to convert to from {currency_names_flags[selected_currency]}:",
+                           f"Select the currency you want to convert to from "
+                           f"{currency_names_flags[selected_currency]}: ",
                            reply_markup=markup)
     user_data['messages'].append(msg.message_id)
     user_data['messages'].append(message.message_id)
@@ -120,8 +121,6 @@ def process_amount(message):
     from_currency = user_data['from_currency']
     to_currency = user_data['to_currency']
     converted_amount = amount * (currency_rates[from_currency] / currency_rates[to_currency])
-
-    # Format the converted amount with commas
     formatted_converted_amount = f"{converted_amount:,.2f}"
 
     bot.send_message(message.chat.id,
@@ -135,16 +134,16 @@ def process_amount(message):
                                                                                                                   1).isdigit())
 def handle_invalid_input(message):
     msg = bot.send_message(message.chat.id, "Invalid input, please enter a valid number.")
-    user_data['invalid_message'] = msg.message_id  # Save the ID of the invalid input message
-    user_data['messages'].append(message.message_id)  # Add the invalid user input message to the messages list
-    user_data['messages'].append(msg.message_id)  # Add the invalid input notification to the messages list
+    user_data['invalid_message'] = msg.message_id
+    user_data['messages'].append(message.message_id)
+    user_data['messages'].append(msg.message_id)
 
 
 @bot.message_handler(func=lambda message: message.text.replace('.', '', 1).isdigit())
 def handle_valid_input(message):
     if 'invalid_message' in user_data:
         try:
-            bot.delete_message(message.chat.id, user_data['invalid_message'])  # Delete the invalid input message
+            bot.delete_message(message.chat.id, user_data['invalid_message'])
             del user_data['invalid_message']
         except Exception as e:
             print(f"Failed to delete invalid input message: {e}")
@@ -153,15 +152,14 @@ def handle_valid_input(message):
 
 @bot.message_handler(commands=['clear'])
 def clear_chat(message):
-    delete_invalid_and_user_messages(message)  # Delete both invalid input and user input
+    delete_invalid_and_user_messages(message)
     send_welcome(message)
 
 
 def delete_invalid_and_user_messages(message):
-    # Delete all invalid and user messages stored in user_data
     if 'invalid_message' in user_data:
         try:
-            bot.delete_message(message.chat.id, user_data['invalid_message'])  # Delete the invalid input message
+            bot.delete_message(message.chat.id, user_data['invalid_message'])
         except Exception as e:
             print(f"Failed to delete invalid input message: {e}")
         del user_data['invalid_message']
