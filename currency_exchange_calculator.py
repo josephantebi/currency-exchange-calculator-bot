@@ -247,12 +247,6 @@ def handle_invalid_input(message):
     user_data['messages'].append(msg.message_id)
 
 
-@bot.message_handler(commands=['clear'])
-def clear_chat(message):
-    delete_invalid_and_user_messages(message)
-    send_welcome(message)
-
-
 def delete_invalid_and_user_messages(message):
     user_data.setdefault('messages', [])
     if 'invalid_message' in user_data:
