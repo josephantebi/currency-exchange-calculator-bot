@@ -1,9 +1,9 @@
-# Currency converter bot 
+# Currency Exchange Calculator Bot 
 # 🤖 💵 💶 💷 🤖
 
 
 ## About
-Currency converter calculator that simple to use, updated on a daily basis, free and without advertising
+Currency exchange calculator that simple to use, updated on a daily basis, free and without ads
 
 📱 LINK TO THE BOT: https://t.me/CurrencyExchangeCalculatorBot
  
@@ -12,7 +12,6 @@ Currency converter calculator that simple to use, updated on a daily basis, free
 ### Prerequisites
 - Python 3.11
 - Poetry
-- MongoDB
 
 ### Setup
 - git clone this repository 
