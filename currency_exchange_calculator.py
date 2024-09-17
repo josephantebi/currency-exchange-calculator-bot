@@ -118,6 +118,24 @@ sorted_currencies = ['ILS', 'EUR', 'USD', 'HUF', 'RON', 'GBP'] + sorted(
     [k for k in currency_rates if k not in ['ILS', 'EUR', 'USD', 'HUF', 'RON', 'GBP']])
 
 
+def delete_duplicate_messages(chat_id):
+    unique_messages = []
+    for msg_id in user_data.get('messages', []):
+        if msg_id not in unique_messages:
+            unique_messages.append(msg_id)
+        else:
+            try:
+                print(f"Deleting duplicate message {msg_id}")
+                bot.delete_message(chat_id, msg_id)
+            except telebot.apihelper.ApiTelegramException as e:
+                if e.result_json['description'] == 'Bad Request: message to delete not found':
+                    print(f"Message {msg_id} not found. Skipping deletion.")
+                else:
+                    print(f"Failed to delete message {msg_id}: {e}")
+
+    user_data['messages'] = unique_messages
+
+
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
     user_data.clear()
@@ -141,6 +159,8 @@ def send_welcome(message):
             bot.delete_message(message.chat.id, user_message_id)
     except Exception as e:
         print(f"Failed to delete message {user_message_id}: {e}")
+
+    delete_duplicate_messages(message.chat.id)
 
 
 def delete_previous_messages(message):
@@ -218,24 +238,13 @@ def process_amount(message):
 @bot.message_handler(
     func=lambda message: 'from_currency' in user_data and 'to_currency' in user_data and not message.text.replace('.',
                                                                                                                   '',
-                                                                                                                  1).isdigit())
+                                                                                                                  1).isdigit() and '/switch' not in message.text)
 def handle_invalid_input(message):
     user_data.setdefault('messages', [])
     msg = bot.send_message(message.chat.id, "Invalid input, please enter a valid number.")
     user_data['invalid_message'] = msg.message_id
     user_data['messages'].append(message.message_id)
     user_data['messages'].append(msg.message_id)
-
-
-@bot.message_handler(func=lambda message: message.text.replace('.', '', 1).isdigit())
-def handle_valid_input(message):
-    if 'invalid_message' in user_data:
-        try:
-            bot.delete_message(message.chat.id, user_data['invalid_message'])
-            del user_data['invalid_message']
-        except Exception as e:
-            print(f"Failed to delete invalid input message: {e}")
-    process_amount(message)
 
 
 @bot.message_handler(commands=['clear'])
@@ -254,5 +263,65 @@ def delete_invalid_and_user_messages(message):
         del user_data['invalid_message']
     delete_previous_messages(message)
 
+
+@bot.message_handler(commands=['switch'])
+def switch_currencies(message):
+    try:
+        bot.delete_message(message.chat.id, message.message_id)
+    except Exception as e:
+        print(f"Failed to delete /switch message: {e}")
+
+    user_data.setdefault('messages', [])
+    if 'from_currency' in user_data and 'to_currency' in user_data:
+        user_data['from_currency'], user_data['to_currency'] = user_data['to_currency'], user_data['from_currency']
+
+        bot.send_message(message.chat.id,
+                         f"-------------------------------- \n {currency_names_flags[user_data['from_currency']]} => {currency_names_flags[user_data['to_currency']]}")
+
+        markup = types.ReplyKeyboardRemove()
+        msg = bot.send_message(message.chat.id,
+                               f"Please enter the amount to convert from {currency_names_flags[user_data['from_currency']]} to {currency_names_flags[user_data['to_currency']]}:",
+                               reply_markup=markup)
+        user_data['messages'].append(msg.message_id)
+    else:
+        error_msg = bot.send_message(message.chat.id, "No currencies selected to switch.")
+        user_data['messages'].append(error_msg.message_id)
+        send_welcome(message)
+        try:
+            bot.delete_message(message.chat.id, error_msg.message_id)
+        except Exception as e:
+            print(f"Failed to delete No currencies selected to switch message: {e}")
+
+
+@bot.message_handler(func=lambda message: message.text.replace('.', '', 1).isdigit())
+def handle_valid_input(message):
+    if 'invalid_message' in user_data:
+        try:
+            bot.delete_message(message.chat.id, user_data['invalid_message'])
+            del user_data['invalid_message']
+        except Exception as e:
+            print(f"Failed to delete invalid input message: {e}")
+
+    if 'error_message_id' in user_data and 'switch_message_id' in user_data:
+        try:
+            bot.delete_message(message.chat.id, user_data['error_message_id'])
+            bot.delete_message(message.chat.id, user_data['switch_message_id'])
+            del user_data['error_message_id']
+            del user_data['switch_message_id']
+        except Exception as e:
+            print(f"Failed to delete error or switch message: {e}")
+
+    process_amount(message)
+
+
+@bot.message_handler(func=lambda message: message.text.replace('.', '', 1).isdigit())
+def handle_valid_input(message):
+    if 'invalid_message' in user_data:
+        try:
+            bot.delete_message(message.chat.id, user_data['invalid_message'])
+            del user_data['invalid_message']
+        except Exception as e:
+            print(f"Failed to delete invalid input message: {e}")
+    process_amount(message)
 
 bot.polling()
