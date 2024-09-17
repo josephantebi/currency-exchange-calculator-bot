@@ -30,4 +30,4 @@ Currency converter calculator that simple to use, updated on a daily basis, free
 ### Running the bot        
 - Run the bot:
 
-      poetry run python bot.py
+      poetry run python currency_converter_bot.py
