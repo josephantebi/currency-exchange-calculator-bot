@@ -10,7 +10,7 @@ python = "~3.12"
 telebot = "^0.0.5"
 ipython = "^8.26.0"
 pymongo = "^4.8.0"
-setuptools = "^72.1.0"
+setuptools = "^75.1.0"
 image = "^1.5.33"
 
 [tool.poetry.group.dev.dependencies]
