@@ -2,6 +2,7 @@ import bot_secrets
 import telebot
 from telebot import types
 import schedule
+import threading
 import time
 import requests
 import json
@@ -58,7 +59,6 @@ def update_currency_rates():
             data = response.json()
 
             ils_to_usd = data['rates']['ILS']
-            print("ils_to_usd", ils_to_usd)
             currency_rates.update({
                 'ILS': 1.0,
                 'EUR': data['rates']['EUR'] / ils_to_usd,
@@ -83,7 +83,7 @@ def update_currency_rates():
     except Exception as e:
         print(f"Error fetching currency rates: {e}")
 
-schedule.every().day.at("09:00").do(update_currency_rates)
+schedule.every().day.at("08:00").do(update_currency_rates)
 
 
 def run_schedule():
@@ -91,7 +91,6 @@ def run_schedule():
         schedule.run_pending()
         time.sleep(1)
 
-import threading
 threading.Thread(target=run_schedule).start()
 
 currency_names_flags = {
