@@ -128,17 +128,10 @@ sorted_currencies = ['ILS', 'EUR', 'USD', 'HUF', 'RON', 'GBP'] + sorted(
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
+    user_data.clear()
     user_data.setdefault('messages', [])
     user_message_id = message.message_id
     delete_invalid_and_user_messages(message)
-
-    if 'start_triggered' in user_data and user_data['start_triggered']:
-        return
-
-    user_data.clear()  # Reset user data here instead of after checking start_triggered
-    user_data['start_triggered'] = True
-
-    user_data.setdefault('messages', [])
 
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True)
     for currency in sorted_currencies[:6]:
