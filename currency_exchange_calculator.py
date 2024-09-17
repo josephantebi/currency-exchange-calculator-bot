@@ -128,6 +128,7 @@ sorted_currencies = ['ILS', 'EUR', 'USD', 'HUF', 'RON', 'GBP'] + sorted(
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
+    user_data.setdefault('messages', [])
     user_message_id = message.message_id
 
     delete_invalid_and_user_messages(message)
@@ -167,6 +168,7 @@ def show_more_currencies(message):
 @bot.message_handler(func=lambda message: 'from_currency' not in user_data and any(
     currency in message.text for currency in currency_names_flags.values()))
 def process_from_currency(message):
+    user_data.setdefault('messages', [])
     selected_currency = next(key for key, value in currency_names_flags.items() if value in message.text)
     user_data['from_currency'] = selected_currency
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True)
@@ -182,6 +184,7 @@ def process_from_currency(message):
 @bot.message_handler(func=lambda message: 'from_currency' in user_data and 'to_currency' not in user_data and any(
     currency in message.text for currency in currency_names_flags.values()))
 def process_to_currency(message):
+    user_data.setdefault('messages', [])
     selected_currency = next(key for key, value in currency_names_flags.items() if value in message.text)
     user_data['to_currency'] = selected_currency
     user_data['messages'].append(message.message_id)
@@ -215,6 +218,7 @@ def process_amount(message):
                                                                                                                   '',
                                                                                                                   1).isdigit())
 def handle_invalid_input(message):
+    user_data.setdefault('messages', [])
     msg = bot.send_message(message.chat.id, "Invalid input, please enter a valid number.")
     user_data['invalid_message'] = msg.message_id
     user_data['messages'].append(message.message_id)
@@ -239,6 +243,7 @@ def clear_chat(message):
 
 
 def delete_invalid_and_user_messages(message):
+    user_data.setdefault('messages', [])
     if 'invalid_message' in user_data:
         try:
             bot.delete_message(message.chat.id, user_data['invalid_message'])
@@ -249,6 +254,7 @@ def delete_invalid_and_user_messages(message):
 
 
 def delete_previous_messages(message):
+    user_data.setdefault('messages', [])
     for msg_id in user_data.get('messages', []):
         try:
             bot.delete_message(message.chat.id, msg_id)
