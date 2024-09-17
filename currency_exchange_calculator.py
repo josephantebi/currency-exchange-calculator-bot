@@ -1,3 +1,4 @@
+# import bot_secrets
 import telebot
 from telebot import types
 import schedule
@@ -7,18 +8,18 @@ import requests
 import json
 import os
 
-try:
-    import bot_secrets
-    API_TOKEN = bot_secrets.BOT_TOKEN
-    API_KEY_EXCHANGE_RATES = bot_secrets.EXCHANGE_RATES
-except ImportError:
-    API_TOKEN = os.getenv('BOT_TOKEN')
-    API_KEY_EXCHANGE_RATES = os.getenv('EXCHANGE_RATES')
+# try:
+#     import bot_secrets
+#     API_TOKEN = bot_secrets.BOT_TOKEN
+#     API_KEY_EXCHANGE_RATES = bot_secrets.EXCHANGE_RATES
+# except ImportError:
+#     API_TOKEN = os.getenv('BOT_TOKEN')
+#     API_KEY_EXCHANGE_RATES = os.getenv('EXCHANGE_RATES')
 
 # API_TOKEN = bot_secrets.BOT_TOKEN
-# API_TOKEN = os.getenv('BOT_TOKEN')
 # API_KEY_EXCHANGE_RATES = bot_secrets.EXCHANGE_RATES
-# API_KEY_EXCHANGE_RATES = os.getenv('EXCHANGE_RATES')
+API_TOKEN = os.getenv('BOT_TOKEN')
+API_KEY_EXCHANGE_RATES = os.getenv('EXCHANGE_RATES')
 
 bot = telebot.TeleBot(API_TOKEN)
 CURRENCY_FILE = "currency_rates.json"
