@@ -130,17 +130,15 @@ sorted_currencies = ['ILS', 'EUR', 'USD', 'HUF', 'RON', 'GBP'] + sorted(
 def send_welcome(message):
     user_data.setdefault('messages', [])
     user_message_id = message.message_id
-
     delete_invalid_and_user_messages(message)
 
     if 'start_triggered' in user_data and user_data['start_triggered']:
         return
 
+    user_data.clear()  # Reset user data here instead of after checking start_triggered
     user_data['start_triggered'] = True
-    user_data.clear()
 
-    if 'messages' not in user_data:
-        user_data['messages'] = []
+    user_data.setdefault('messages', [])
 
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True)
     for currency in sorted_currencies[:6]:
@@ -152,7 +150,11 @@ def send_welcome(message):
     msg = bot.send_message(message.chat.id, "Select the currency you want to convert from:", reply_markup=markup)
     user_data['messages'].append(msg.message_id)
 
-    bot.delete_message(message.chat.id, user_message_id)
+    try:
+        if user_message_id:
+            bot.delete_message(message.chat.id, user_message_id)
+    except Exception as e:
+        print(f"Failed to delete message {user_message_id}: {e}")
 
 
 @bot.message_handler(func=lambda message: 'More' in message.text)
@@ -257,6 +259,7 @@ def delete_previous_messages(message):
     user_data.setdefault('messages', [])
     for msg_id in user_data.get('messages', []):
         try:
+            print(f"Trying to delete message {msg_id}")
             bot.delete_message(message.chat.id, msg_id)
         except Exception as e:
             print(f"Failed to delete message {msg_id}: {e}")
