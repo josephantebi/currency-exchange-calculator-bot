@@ -261,8 +261,12 @@ def delete_previous_messages(message):
         try:
             print(f"Trying to delete message {msg_id}")
             bot.delete_message(message.chat.id, msg_id)
-        except Exception as e:
-            print(f"Failed to delete message {msg_id}: {e}")
+        except telebot.apihelper.ApiTelegramException as e:
+            # Handle specific Telegram API error for message not found
+            if e.result_json['description'] == 'Bad Request: message to delete not found':
+                print(f"Message {msg_id} not found. Skipping deletion.")
+            else:
+                print(f"Failed to delete message {msg_id}: {e}")
     user_data['messages'] = []
 
 bot.polling()
