@@ -129,8 +129,9 @@ sorted_currencies = ['ILS', 'EUR', 'USD', 'HUF', 'RON', 'GBP'] + sorted(
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
     user_data.clear()
-    user_data.setdefault('messages', [])
+    user_data['messages'] = []
     user_message_id = message.message_id
+
     delete_invalid_and_user_messages(message)
 
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True)
@@ -148,6 +149,20 @@ def send_welcome(message):
             bot.delete_message(message.chat.id, user_message_id)
     except Exception as e:
         print(f"Failed to delete message {user_message_id}: {e}")
+
+
+def delete_previous_messages(message):
+    user_data.setdefault('messages', [])
+    for msg_id in user_data.get('messages', []):
+        try:
+            print(f"Trying to delete message {msg_id}")
+            bot.delete_message(message.chat.id, msg_id)
+        except telebot.apihelper.ApiTelegramException as e:
+            if e.result_json['description'] == 'Bad Request: message to delete not found':
+                print(f"Message {msg_id} not found. Skipping deletion.")
+            else:
+                print(f"Failed to delete message {msg_id}: {e}")
+    user_data['messages'] = []
 
 
 @bot.message_handler(func=lambda message: 'More' in message.text)
@@ -247,19 +262,5 @@ def delete_invalid_and_user_messages(message):
         del user_data['invalid_message']
     delete_previous_messages(message)
 
-
-def delete_previous_messages(message):
-    user_data.setdefault('messages', [])
-    for msg_id in user_data.get('messages', []):
-        try:
-            print(f"Trying to delete message {msg_id}")
-            bot.delete_message(message.chat.id, msg_id)
-        except telebot.apihelper.ApiTelegramException as e:
-            # Handle specific Telegram API error for message not found
-            if e.result_json['description'] == 'Bad Request: message to delete not found':
-                print(f"Message {msg_id} not found. Skipping deletion.")
-            else:
-                print(f"Failed to delete message {msg_id}: {e}")
-    user_data['messages'] = []
 
 bot.polling()
