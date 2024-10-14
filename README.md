@@ -20,13 +20,12 @@ Currency exchange calculator that simple to use, updated on a daily basis, free 
     
       poetry install
 
-
 - Get an API Token for a bot via the [BotFather](https://telegram.me/BotFather)
-- Create a `bot_settings.py` file with your bot token:
+- Create a `bot_secrets.py` file with your bot token:
 
       BOT_TOKEN = 'xxxxxxx'
 
 ### Running the bot        
 - Run the bot:
 
-      poetry run python currency_converter_bot.py
+      poetry run python currency_exchange_calculator.py
